@@ -27,6 +27,9 @@ class Genotype
    }
   }
   
+  /**
+    @return a copy of this genotype.
+  */
   public Genotype clone()
   {
    ArrayList<Float> clonedGenes = new ArrayList<Float>();
@@ -38,6 +41,9 @@ class Genotype
    return new Genotype(clonedGenes); 
   }
   
+  /**
+    @return a mutated copy of this genotype.
+  */
   public Genotype mutate(float sd)
   {
    ArrayList<Float> mGenes = new ArrayList<Float>();
@@ -52,6 +58,9 @@ class Genotype
    return new Genotype(mGenes);
   }
   
+  /**
+    @return the string representation of this genotype.
+  */
   public String toString()
   {
     String toString = "[";
@@ -62,6 +71,9 @@ class Genotype
    return toString + String.format("%.2f]", genes.get(genes.size() - 1)); 
   }
   
+  /**
+    @return the size of the genotype.
+  */
   public int size()
   {
    return genes.size(); 
