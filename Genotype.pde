@@ -50,7 +50,6 @@ class Genotype
    Iterator<Float> iterator = genes.iterator();
    while(iterator.hasNext())
    {
-     // Use a gaussian distribution with a mean of 0 and a standard deviation given as a parameter.
     float mGene = iterator.next() + randomGaussian() * mutationSD;
     mGene = min(max(0, mGene), 1);
     mGenes.add(mGene); 

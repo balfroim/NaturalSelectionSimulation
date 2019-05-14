@@ -24,7 +24,7 @@ class Timer
   {
     startFrameTime = millis();
     lastFrameTime = 0;
-    currentFrameTime = 0;
+    currentFrameTime = millis();
   }
   
   /**

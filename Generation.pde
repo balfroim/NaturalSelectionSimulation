@@ -1,21 +1,25 @@
 class Generation
 {
   ArrayList<Blob> blobs;
+  final int size;
   final float avgSpeed;
   final float avgSize;
   final float avgSense;
+  Genotype worstGenotype;
+  Genotype bestGenotype;
   
-  Generation()
+  Generation(int size)
   {
     this.blobs = new ArrayList<Blob>();
+    this.size = size;
     float sumSpeed = 0;
     float sumSize = 0;
     float sumSense = 0;
-    for(int i = 0; i < nbBlobs; i++)
+    for(int i = 0; i < size; i++)
     {
       // Create a new Blob
       Genotype genotype = new Genotype(3);
-      PVector position = rdmPos(genotype.getAllele(0) * 100); //new PVector(random(width), random(32, height));
+      PVector position = rdmPos(genotype.getAllele(0) * 50);
       Blob b = new Blob(position, genotype);
       blobs.add(b);
       
@@ -24,27 +28,28 @@ class Generation
       sumSense += genotype.getAllele(2);
     }
     
-    avgSpeed = sumSpeed / nbBlobs;
-    avgSize = sumSize / nbBlobs;
-    avgSense = sumSense / nbBlobs;
+    avgSpeed = sumSpeed / size;
+    avgSize = sumSize / size;
+    avgSense = sumSense / size;
   }
   
   Generation(ArrayList<Blob> blobs)
   {
     this.blobs = blobs;
+    this.size = blobs.size();
     float sumSpeed = 0;
     float sumSize = 0;
     float sumSense = 0;
     for(Blob b : blobs)
     {
-      Genotype genotype =  b.getGenotype();
+      Genotype genotype =  b.getGenotype().clone();
       sumSpeed += genotype.getAllele(0);
       sumSize += genotype.getAllele(1);
       sumSense += genotype.getAllele(2);
     }
-    avgSpeed = sumSpeed / nbBlobs;
-    avgSize = sumSize / nbBlobs;
-    avgSense = sumSense / nbBlobs;
+    avgSpeed = sumSpeed / size;
+    avgSize = sumSize /  size;
+    avgSense = sumSense /  size;
   }
   
   /**
@@ -78,7 +83,7 @@ class Generation
     
     for(Blob b : blobs)
     {
-     if(!b.isDead() && b.getEatCount() > 2)
+     if(!b.isDead() && b.getFoodAmount() > 2)
      {
        if(bestBlobs.size() < bestof)
          bestBlobs.add(b);
@@ -98,23 +103,23 @@ class Generation
   /**
     @return the next generation based on the best genes of the previous generation.
   */
-  public Generation next()
+  public Generation nextGeneration()
   {
     ArrayList<Blob> nextPopulation = new ArrayList<Blob>();
     Iterator<Blob> survivors = getLivingBlobs();
     while(survivors.hasNext())
     {
      Blob b = survivors.next();
-     // The blobs that eat at least one piece of food survived.
-     if(b.getEatCount() >= 1)
+     // The blobs that eat at least one piece of food survives.
+     if(b.getFoodAmount() >= 1)
        nextPopulation.add(b.clone());
      
      // The blobs that eat at least two pieces replicate.
-     for(int i = 0; i < b.getEatCount() - 1;i++)
+     for(int i = 0; i < b.getFoodAmount() - 1;i++)
        nextPopulation.add(b.mutate());
     }
    
-    return new Generation(nextPopulation); //<>//
+    return new Generation(nextPopulation);
   }
   
   private String avgGenotype()
@@ -122,20 +127,32 @@ class Generation
    return String.format("[%.2f|%.2f|%.2f]", avgSpeed, avgSize, avgSense); 
   }
   
-  public String showAverage()
+  public float getAverage()
   {
     float sumFitness = 0;
     for(Blob b : blobs)
     {
       sumFitness += b.fitness();
     }
-    return String.format("Average fitness = %.2f --> %s", sumFitness / nbBlobs, avgGenotype());
+    return sumFitness / getSize();
   }
   
-  public String showBest()
+  public String showAverage(Generation previousGen)
+  {
+    if(previousGen != null)
+    {
+      float deltaAverage = getAverage() - previousGen.getAverage();
+       return String.format("Average fitness = %.2f (%s) --> %s", getAverage(), DELTAFMT.format(deltaAverage), avgGenotype());
+    }
+    else
+    {
+      return String.format("Average fitness = %.2f --> %s", getAverage(), avgGenotype());
+    }
+  }
+  
+  public float getBest()
   {
     float bestFitness = 0;
-    Genotype bestGenotype = null;
     for(Blob b : blobs)
     {
       if(b.fitness() > bestFitness)
@@ -144,23 +161,50 @@ class Generation
          bestGenotype = b.getGenotype();
       }
     }
-    return String.format("Best fitness = %.2f --> %s", bestFitness, bestGenotype);
+    return bestFitness;
   }
   
-  public String showWorst()
+  public String showBest(Generation previousGen)
   {
-    float worstFitness = 10000000000.0;
-    Genotype worstGenotype = null;
+    float bestFitness = getBest();
+    if(previousGen != null)
+    {
+      float deltaBest = bestFitness - previousGen.getBest(); 
+      return String.format("Best fitness = %.2f (%s) --> %s", bestFitness, DELTAFMT.format(deltaBest), bestGenotype);
+    }
+    else
+    {
+      return String.format("Best fitness = %.2f --> %s", bestFitness, bestGenotype);
+    }
+    
+  }
+  
+  public float getWorst()
+  {
+    float worstFitness = 1000000000000000.0;
     for(Blob b : blobs)
     {
       if(b.fitness() < worstFitness)
       {
         worstFitness = b.fitness();
         worstGenotype = b.getGenotype();
-      }
-       
+      } 
     }
-    return String.format("Worst fitness = %.2f --> %s", worstFitness, worstGenotype);
+    return worstFitness;
+  }
+  
+  public String showWorst(Generation previousGen)
+  {
+    float worstFitness = getWorst();
+    if(previousGen != null)
+    {
+      float deltaBest = worstFitness - previousGen.getWorst(); 
+      return String.format("Worst fitness = %.2f (%s) --> %s", worstFitness, DELTAFMT.format(deltaBest), worstGenotype);
+    }
+    else
+    {
+      return String.format("Worst fitness = %.2f --> %s", worstFitness, worstGenotype);
+    }
     
   }
   
@@ -169,10 +213,15 @@ class Generation
    int countSurvivor = 0;
    for(Blob b : blobs)
    {
-    if(!b.isDead() && b.getEatCount() >= 1)
+    if(!b.isDead() && b.getFoodAmount() >= 1)
        countSurvivor++;
    }
    return String.format("%d survived the next day out of %d", countSurvivor, blobs.size());
+  }
+  
+  public int getSize()
+  {
+   return size; 
   }
   
   

@@ -4,12 +4,18 @@
 class Blob implements Living, Comparable
 {
   private PVector pos;
+  // The direction of the blob.
   private PVector dir;
   private final Genotype genotype;
   private boolean dead;
   // If true the blobs try to reach the target point, otherwise it avoid it.
   private boolean chase;
-  private int eatCount;
+  // The amount of food eaten.
+  // If less than 1 --> Die
+  // If more than 1 --> Survive
+  // If more than 2 --> Replicate as much as food excess.
+  private int foodAmount;
+  // Living can be a plant or another blobs.
   private Living target;
   // Position of the screen's center, use as a target when the blobs doesn't find any.
   private final PVector center;
@@ -24,7 +30,7 @@ class Blob implements Living, Comparable
     this.genotype = genotype;
     dead = false;
     chase = false;
-    eatCount = 0;
+    foodAmount = 0;
     center = new PVector(width / 2, height / 2);
     dir = PVector.sub(center, pos).normalize();
   }
@@ -79,7 +85,6 @@ class Blob implements Living, Comparable
   
   public void eat()
   {
-    println("aaargh");
     dead = true;
   }
   
@@ -110,12 +115,13 @@ class Blob implements Living, Comparable
     {
       if(DEBUG)
       {
-        // Show the sight.
+        // Drawing a red circle around blobs to see the sight size.
         noFill();
         stroke(255, 0, 0);
         circle(pos.x, pos.y, getSense() * 2);
       }
       
+      // Draw the blob.
       stroke(0, 0, 0);
       fill(0);
       circle(pos.x, pos.y, getSize());
@@ -137,8 +143,7 @@ class Blob implements Living, Comparable
     // Clamp the position between the edges
     float halfSize = getSize() / 2;
     pos.x = min(max(pos.x, halfSize), width - halfSize);
-    pos.y = min(max(pos.y, 32 + halfSize), height - halfSize);
-    
+    pos.y = min(max(pos.y, 32 + halfSize), height - halfSize);  
   }
   
   public void update()
@@ -181,7 +186,7 @@ class Blob implements Living, Comparable
       {
         target.eat();
         target = null;
-        eatCount++;
+        foodAmount++;
       }
     }
   }
@@ -194,7 +199,7 @@ class Blob implements Living, Comparable
   }
   
   /**
-     fitness = speed ^ 3 * size ^ 2 + sense
+     fitness = log_2(eatCount) - speed ^ 3 * size ^ 2 + sense
      @return the fitness score of this blob.
   */
   public float fitness()
@@ -203,7 +208,7 @@ class Blob implements Living, Comparable
    float squareSize = genotype.getAllele(1) * genotype.getAllele(1);
    float sense = genotype.getAllele(2);
    float energy = cubeSpeed * squareSize + sense;
-   float log2EatCount = log(eatCount+1) / log(2);
+   float log2EatCount = log(foodAmount+1) / log(2);
    return log2EatCount - energy;
   }
   
@@ -212,9 +217,9 @@ class Blob implements Living, Comparable
     return genotype;
   }
   
-  public int getEatCount()
+  public int getFoodAmount()
   {
-   return eatCount; 
+   return foodAmount; 
   }
   
   public Blob clone()
@@ -230,7 +235,9 @@ class Blob implements Living, Comparable
     Genotype newGenotype = genotype.mutate();
     float halfSize = getSize() / 2;
     PVector newPos = rdmPos(halfSize);
-    return new Blob(newPos, newGenotype);
+    Blob baby = new Blob(newPos, newGenotype);
+    
+    return baby;
   }
 }
 
