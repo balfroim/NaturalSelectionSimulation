@@ -1,4 +1,4 @@
-import java.util.Iterator;
+
 
 /**
   @overview Representing a genotype that can be cloned and mutated.
@@ -44,14 +44,14 @@ class Genotype
   /**
     @return a mutated copy of this genotype.
   */
-  public Genotype mutate(float sd)
+  public Genotype mutate()
   {
    ArrayList<Float> mGenes = new ArrayList<Float>();
    Iterator<Float> iterator = genes.iterator();
    while(iterator.hasNext())
    {
      // Use a gaussian distribution with a mean of 0 and a standard deviation given as a parameter.
-    float mGene = iterator.next() + randomGaussian() * sd;
+    float mGene = iterator.next() + randomGaussian() * mutationSD;
     mGene = min(max(0, mGene), 1);
     mGenes.add(mGene); 
    }
