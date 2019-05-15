@@ -1,7 +1,5 @@
-
-
 /**
-  @overview Representing a genotype that can be cloned and mutated.
+  @overview Representation of a genotype.
   @specfield: alleles : float // All the genes values.
   @derivedfield: size : int // The size of the genotype.
   Genotype is immutable.

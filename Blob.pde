@@ -199,17 +199,16 @@ class Blob implements Living, Comparable
   }
   
   /**
-     fitness = log_2(eatCount) - speed ^ 3 * size ^ 2 + sense
+     fitness = foodAmount / sqrt[(1+speed) ^ 3 * (1+size) ^ 2 + (1+sense)]
      @return the fitness score of this blob.
   */
   public float fitness()
   {
-   float cubeSpeed = genotype.getAllele(0) * genotype.getAllele(0) * genotype.getAllele(0);
-   float squareSize = genotype.getAllele(1) * genotype.getAllele(1);
-   float sense = genotype.getAllele(2);
+   float cubeSpeed = (1+genotype.getAllele(0)) * (1+genotype.getAllele(0)) * (1+genotype.getAllele(0));
+   float squareSize = (1+genotype.getAllele(1)) * (1+genotype.getAllele(1));
+   float sense = (1+genotype.getAllele(2));
    float energy = cubeSpeed * squareSize + sense;
-   float log2EatCount = log(foodAmount+1) / log(2);
-   return log2EatCount - energy;
+   return foodAmount / energy;
   }
   
   public Genotype getGenotype()

@@ -77,27 +77,26 @@ class Generation
   /**
     @return the best blobs of this generation.
   */
-  public TreeSet<Blob> bestof(int bestof)
+  public TreeSet<Blob> bestof(float percentage)
   {
     TreeSet<Blob> bestBlobs = new TreeSet<Blob>();
-    
-    for(Blob b : blobs)
+    Iterator<Blob> livings = getLivingBlobs();
+    int count = 0;
+    while(livings.hasNext() && count <= size * percentage)
     {
-     if(!b.isDead() && b.getFoodAmount() > 2)
-     {
-       if(bestBlobs.size() < bestof)
+     Blob b = livings.next();
+     if(bestBlobs.size() < size * percentage)
          bestBlobs.add(b);
-       else
+     else
+     {
+       if(b.compareTo(bestBlobs.first()) == 1)
        {
-         if(b.compareTo(bestBlobs.first()) == 1)
-         {
-           bestBlobs.pollFirst();
-           bestBlobs.add(b);
-         }
+         bestBlobs.pollFirst();
+         bestBlobs.add(b);
        }
      }
     }
-    return bestBlobs;
+  return bestBlobs;
   }
   
   /**
@@ -106,19 +105,14 @@ class Generation
   public Generation nextGeneration()
   {
     ArrayList<Blob> nextPopulation = new ArrayList<Blob>();
-    Iterator<Blob> survivors = getLivingBlobs();
-    while(survivors.hasNext())
+    // Take only the top 10%
+    TreeSet<Blob> bestBlobs = bestof(0.1);
+    for(Blob b : bestBlobs)
     {
-     Blob b = survivors.next();
-     // The blobs that eat at least one piece of food survives.
-     if(b.getFoodAmount() >= 1)
-       nextPopulation.add(b.clone());
-     
-     // The blobs that eat at least two pieces replicate.
-     for(int i = 0; i < b.getFoodAmount() - 1;i++)
+     for(int i = 0; i < b.getFoodAmount();i++)
        nextPopulation.add(b.mutate());
     }
-   
+ 
     return new Generation(nextPopulation);
   }
   

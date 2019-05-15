@@ -25,7 +25,7 @@ final float genDuration = 10;
 // The duration of a pause between two generations in seconds.
 final float pauseDuration = 5;
 // The initial number of blobs.
-final int initBlobsNb = 20;
+final int initBlobsNb = 100;
 // The initial number of plants.
 final int initPlantsNb = 100;
 // Mutation standard deviation
@@ -59,7 +59,7 @@ void generatePlants()
 
 void setup() 
 {
-  size(512, 512);
+  size(512, 548);
   generations = new ArrayList<Generation>();
   generations.add(new Generation(initBlobsNb));
   plants = new ArrayList<Plant>();
@@ -91,7 +91,10 @@ void draw()
       // Display the current generation.
       textSize(textSize);
       textAlign(CENTER);
-      text(String.format("Generation %d", currentGen), width / 2, textSize);
+      text(String.format("Generation %d", currentGen), width / 2, 7 * textSize / 8);
+      noFill();
+      rect(0, 0, width, textSize);
+      
       
       // Display all the plants.
       for(Plant p : plants)
